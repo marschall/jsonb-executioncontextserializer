@@ -1,5 +1,7 @@
 package com.github.marschall.jsonbexecutioncontextserializer;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,9 +23,10 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
 
   public JsonbExecutionContextSerializer() {
     JsonbConfig config = new JsonbConfig()
-      .withDeserializers(new JobParameterSerializer())
-      .withSerializers(new JobParameterSerializer())
-      .withAdapters(new ExecutionContextAdapter(), new JobParametersAdapter(), new LocaleAdapter());
+            .withEncoding(ISO_8859_1.name()) // JdbcJobExecutionDao hard codes ISO-8859-1
+            .withDeserializers(new JobParameterSerializer())
+            .withSerializers(new JobParameterSerializer())
+            .withAdapters(new ExecutionContextAdapter(), new JobParametersAdapter(), new LocaleAdapter());
     this.jsonb = JsonbBuilder.create(config);
   }
 
