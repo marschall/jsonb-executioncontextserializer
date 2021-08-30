@@ -42,6 +42,12 @@ public abstract class AbstractExecutionContextSerializerTests {
     m1.put("object3", new Date(123456790123L));
     m1.put("object4", 1234567.1234D);
 
+    // Jackson
+    // {"@class":"java.util.HashMap"
+    // "object2":"OBJECT TWO"
+    // "object1":["java.lang.Long",12345]
+    // "object4":1234567.1234
+    // "object3":["java.util.Date",123456790123]}
     Map<String, Object> m2 = this.serializationRoundTrip(m1);
 
     this.compareContexts(m1, m2);
@@ -105,6 +111,11 @@ public abstract class AbstractExecutionContextSerializerTests {
     Map<String, Object> m1 = new HashMap<>();
     m1.put("params", new JobParameters(jobParametersMap));
 
+    // Jackson
+    // {"@class":"java.util.HashMap"
+    // "params":{"@class":"org.springframework.batch.core.JobParameters"
+    // "parameters":{"@class":"java.util.LinkedHashMap"
+    // "paramName":{"@class":"org.springframework.batch.core.JobParameter","identifying":true,"value":"paramValue","type":"STRING"}}}}
     Map<String, Object> m2 = this.serializationRoundTrip(m1);
 
     this.compareContexts(m1, m2);

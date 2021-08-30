@@ -24,13 +24,13 @@ import org.springframework.batch.core.repository.dao.Jackson2ExecutionContextStr
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-class JsonBExecutionContextStringSerializerTest extends AbstractExecutionContextSerializerTests {
+class JsonbExecutionContextSerializerTest extends AbstractExecutionContextSerializerTests {
 
   private ExecutionContextSerializer serializer;
 
   @BeforeEach
   void onSetUp() {
-    this.serializer = new JsonBExecutionContextStringSerializer();
+    this.serializer = new JsonbExecutionContextSerializer();
   }
 
   @Test
@@ -43,7 +43,7 @@ class JsonBExecutionContextStringSerializerTest extends AbstractExecutionContext
     person.phone.areaCode = 555;
     person.phone.local = 1234567;
 
-    ExecutionContextSerializer j = new JsonBExecutionContextStringSerializer();
+    ExecutionContextSerializer j = new JsonbExecutionContextSerializer();
 
     Map<String, Object> context = new HashMap<>(1);
     context.put("person", person);
@@ -109,7 +109,7 @@ class JsonBExecutionContextStringSerializerTest extends AbstractExecutionContext
     person.phone.areaCode = 555;
     person.phone.local = 1234567;
 
-    ExecutionContextSerializer j = new JsonBExecutionContextStringSerializer();
+    ExecutionContextSerializer j = new JsonbExecutionContextSerializer();
 
     Map<String, Object> context = new HashMap<>(1);
     context.put("person", person);

@@ -13,25 +13,25 @@ import javax.json.bind.JsonbConfig;
 
 import org.springframework.batch.core.repository.ExecutionContextSerializer;
 
-public final class JsonBExecutionContextStringSerializer implements ExecutionContextSerializer {
+public final class JsonbExecutionContextSerializer implements ExecutionContextSerializer {
 
   private static final Type MAP_TYPE = new HashMap<String, Object>().getClass().getGenericSuperclass();
 
   private final Jsonb jsonb;
 
-  public JsonBExecutionContextStringSerializer() {
+  public JsonbExecutionContextSerializer() {
     JsonbConfig config = new JsonbConfig()
       .withDeserializers(new JobParameterSerializer())
       .withSerializers(new JobParameterSerializer())
-      .withAdapters(new ExecutionContextAdapter());
+      .withAdapters(new ExecutionContextAdapter(), new JobParametersAdapter());
     this.jsonb = JsonbBuilder.create(config);
   }
 
-  public JsonBExecutionContextStringSerializer(JsonbConfig config) {
+  public JsonbExecutionContextSerializer(JsonbConfig config) {
     this.jsonb = JsonbBuilder.create(config);
   }
 
-  public JsonBExecutionContextStringSerializer(Jsonb jsonb) {
+  public JsonbExecutionContextSerializer(Jsonb jsonb) {
     this.jsonb = jsonb;
   }
 

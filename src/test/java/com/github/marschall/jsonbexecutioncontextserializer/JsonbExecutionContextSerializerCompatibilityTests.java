@@ -17,10 +17,10 @@ import org.springframework.batch.core.repository.ExecutionContextSerializer;
 import org.springframework.batch.core.repository.dao.Jackson2ExecutionContextStringSerializer;
 import org.springframework.batch.item.ExecutionContext;
 
-class JsonBExecutionContextStringSerializerCompatibilityTests {
+class JsonbExecutionContextSerializerCompatibilityTests {
 
   static List<ExecutionContextSerializer> serializers() {
-    return List.of(new Jackson2ExecutionContextStringSerializer(), new JsonBExecutionContextStringSerializer());
+    return List.of(new Jackson2ExecutionContextStringSerializer(), new JsonbExecutionContextSerializer());
   }
 
   @ParameterizedTest
