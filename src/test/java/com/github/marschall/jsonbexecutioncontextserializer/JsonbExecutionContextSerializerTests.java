@@ -194,6 +194,7 @@ class JsonbExecutionContextSerializerTests extends AbstractExecutionContextSeria
     LocalDateTime localDateTime = LocalDateTime.of(localDate, localTime);
 
     // jdk
+    m1.put("string", "\u00C4");
     m1.put("util.date", new java.util.Date(System.currentTimeMillis()));
     m1.put("sql.date", java.sql.Date.valueOf("2021-08-30"));
     m1.put("sql.time", java.sql.Time.valueOf("20:38:21"));
