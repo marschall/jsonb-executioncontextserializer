@@ -3,6 +3,7 @@ package com.github.marschall.jsonbexecutioncontextserializer;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.junit.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
@@ -34,7 +35,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public abstract class AbstractExecutionContextSerializerTests {
 
   @Test
-  void testSerializeAMap() throws Exception {
+  void serializeAMap() throws Exception {
     Map<String, Object> m1 = new HashMap<>();
     m1.put("object1", Long.valueOf(12345L));
     m1.put("object2", "OBJECT TWO");
@@ -54,7 +55,7 @@ public abstract class AbstractExecutionContextSerializerTests {
   }
 
   @Test
-  void testSerializeStringJobParameter() throws Exception {
+  void serializeStringJobParameter() throws Exception {
     Map<String, Object> m1 = new HashMap<>();
     m1.put("name", new JobParameter("foo"));
 
@@ -64,7 +65,7 @@ public abstract class AbstractExecutionContextSerializerTests {
   }
 
   @Test
-  void testSerializeDateJobParameter() throws Exception {
+  void serializeDateJobParameter() throws Exception {
     Map<String, Object> m1 = new HashMap<>();
     m1.put("birthDate", new JobParameter(new Date(123456790123L)));
 
@@ -74,7 +75,7 @@ public abstract class AbstractExecutionContextSerializerTests {
   }
 
   @Test
-  void testSerializeDoubleJobParameter() throws Exception {
+  void serializeDoubleJobParameter() throws Exception {
     Map<String, Object> m1 = new HashMap<>();
     m1.put("weight", new JobParameter(80.5D));
 
@@ -84,7 +85,7 @@ public abstract class AbstractExecutionContextSerializerTests {
   }
 
   @Test
-  void testSerializeLongJobParameter() throws Exception {
+  void serializeLongJobParameter() throws Exception {
     Map<String, Object> m1 = new HashMap<>();
     m1.put("age", new JobParameter(20L));
 
@@ -94,7 +95,7 @@ public abstract class AbstractExecutionContextSerializerTests {
   }
 
   @Test
-  void testSerializeNonIdentifyingJobParameter() throws Exception {
+  void serializeNonIdentifyingJobParameter() throws Exception {
     Map<String, Object> m1 = new HashMap<>();
     m1.put("name", new JobParameter("foo", false));
 
@@ -104,7 +105,7 @@ public abstract class AbstractExecutionContextSerializerTests {
   }
 
   @Test
-  void testSerializeJobParameters() throws Exception {
+  void serializeJobParameters() throws Exception {
     Map<String, JobParameter> jobParametersMap = new HashMap<>();
     jobParametersMap.put("paramName", new JobParameter("paramValue"));
 
@@ -122,7 +123,7 @@ public abstract class AbstractExecutionContextSerializerTests {
   }
 
   @Test
-  void testSerializeEmptyJobParameters() throws IOException {
+  void serializeEmptyJobParameters() throws IOException {
     Map<String, Object> m1 = new HashMap<>();
     m1.put("params", new JobParameters());
 
@@ -132,7 +133,7 @@ public abstract class AbstractExecutionContextSerializerTests {
   }
 
   @Test
-  void testComplexObject() throws Exception {
+  void complexObject() throws Exception {
     Map<String, Object> m1 = new HashMap<>();
     ComplexObject o1 = new ComplexObject();
     o1.setName("02345");
@@ -154,11 +155,12 @@ public abstract class AbstractExecutionContextSerializerTests {
   }
 
   @Test
-  void testNullSerialization() throws Exception {
+  void nullSerialization() throws Exception {
     assertThrows(IllegalArgumentException.class, () -> this.getSerializer().serialize(null, null));
   }
 
   protected void compareContexts(Map<String, Object> m1, Map<String, Object> m2) {
+    assertEquals(m1.size(), m2.size());
 
     for (Map.Entry<String, Object> entry : m1.entrySet()) {
       assertThat(m2, hasEntry(entry.getKey(), entry.getValue()));

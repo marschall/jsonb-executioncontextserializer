@@ -9,8 +9,21 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -20,11 +33,10 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.repository.ExecutionContextSerializer;
-import org.springframework.batch.core.repository.dao.Jackson2ExecutionContextStringSerializer;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-class JsonbExecutionContextSerializerTest extends AbstractExecutionContextSerializerTests {
+class JsonbExecutionContextSerializerTests extends AbstractExecutionContextSerializerTests {
 
   private ExecutionContextSerializer serializer;
 
@@ -34,7 +46,7 @@ class JsonbExecutionContextSerializerTest extends AbstractExecutionContextSerial
   }
 
   @Test
-  public void mappedTypeTest() throws IOException {
+  void mappedType() throws IOException {
 
     Person person = new Person();
     person.age = 28;
@@ -43,21 +55,19 @@ class JsonbExecutionContextSerializerTest extends AbstractExecutionContextSerial
     person.phone.areaCode = 555;
     person.phone.local = 1234567;
 
-    ExecutionContextSerializer j = new JsonbExecutionContextSerializer();
-
     Map<String, Object> context = new HashMap<>(1);
     context.put("person", person);
 
     ByteArrayOutputStream os = new ByteArrayOutputStream();
-    j.serialize(context, os);
+    this.serializer.serialize(context, os);
 
     InputStream in = new ByteArrayInputStream(os.toByteArray());
 
-    j.deserialize(in);
+    this.serializer.deserialize(in);
   }
 
   @Test
-  public void testAdditionalTrustedClass() throws IOException {
+  void additionalTrustedClass() throws IOException {
     // given
     Map<String, Object> context = new HashMap<>(1);
     context.put("locale", Locale.getDefault());
@@ -97,7 +107,7 @@ class JsonbExecutionContextSerializerTest extends AbstractExecutionContextSerial
   public static class DomesticNumber extends PhoneNumber{}
 
   @Test
-  public void unmappedTypeTest() throws IOException {
+  void unmappedType() throws IOException {
 
     UnmappedPerson person = new UnmappedPerson();
     person.age = 28;
@@ -106,17 +116,15 @@ class JsonbExecutionContextSerializerTest extends AbstractExecutionContextSerial
     person.phone.areaCode = 555;
     person.phone.local = 1234567;
 
-    ExecutionContextSerializer j = new JsonbExecutionContextSerializer();
-
     Map<String, Object> context = new HashMap<>(1);
     context.put("person", person);
 
     ByteArrayOutputStream os = new ByteArrayOutputStream();
-    j.serialize(context, os);
+    this.serializer.serialize(context, os);
 
     InputStream in = new ByteArrayInputStream(os.toByteArray());
 
-    assertThrows(Exception.class, () -> j.deserialize(in), "An exception should have been thrown but wasn't");
+    assertThrows(Exception.class, () -> this.serializer.deserialize(in), "An exception should have been thrown but wasn't");
   }
 
   public static class UnmappedPerson {
@@ -136,19 +144,18 @@ class JsonbExecutionContextSerializerTest extends AbstractExecutionContextSerial
   public static class UnmappedDomesticNumber extends UnmappedPhoneNumber{}
 
   @Test
-  public void arrayAsListSerializationTest() throws IOException {
+  void arrayAsListSerialization() throws IOException {
     //given
     List<String> list = Arrays.asList("foo", "bar");
     String key = "Arrays.asList";
-    Jackson2ExecutionContextStringSerializer serializer = new Jackson2ExecutionContextStringSerializer();
     Map<String, Object> context = new HashMap<>(1);
     context.put(key, list);
 
     // when
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    serializer.serialize(context, outputStream);
+    this.serializer.serialize(context, outputStream);
     InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-    Map<String, Object> deserializedContext = serializer.deserialize(inputStream);
+    Map<String, Object> deserializedContext = this.serializer.deserialize(inputStream);
 
     // then
     Object deserializedValue = deserializedContext.get(key);
@@ -157,22 +164,67 @@ class JsonbExecutionContextSerializerTest extends AbstractExecutionContextSerial
   }
 
   @Test
-  public void testSqlTimestampSerialization() throws IOException {
+  void sqlTimestampSerialization() throws IOException {
     //given
-    Jackson2ExecutionContextStringSerializer serializer = new Jackson2ExecutionContextStringSerializer();
     Map<String, Object> context = new HashMap<>(1);
     Timestamp timestamp = new Timestamp(Instant.now().toEpochMilli());
     context.put("timestamp", timestamp);
 
     // when
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    serializer.serialize(context, outputStream);
+    this.serializer.serialize(context, outputStream);
     InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-    Map<String, Object> deserializedContext = serializer.deserialize(inputStream);
+    Map<String, Object> deserializedContext = this.serializer.deserialize(inputStream);
 
     // then
     Timestamp deserializedTimestamp = (Timestamp) deserializedContext.get("timestamp");
     assertEquals(timestamp, deserializedTimestamp);
+  }
+
+  public static void main(String[] args) {
+    System.out.println(Instant.now().getEpochSecond());
+  }
+
+  @Test
+  void scalarTypeSerialization() throws Exception {
+    Map<String, Object> m1 = new HashMap<>();
+    Instant instant = Instant.ofEpochSecond(1630348638L, 123456789L);
+    LocalDate localDate = LocalDate.of(2021, 8, 30);
+    LocalTime localTime = LocalTime.of(20, 38, 21, 123456789);
+    LocalDateTime localDateTime = LocalDateTime.of(localDate, localTime);
+
+    // jdk
+    m1.put("util.date", new java.util.Date(System.currentTimeMillis()));
+    m1.put("sql.date", java.sql.Date.valueOf("2021-08-30"));
+    m1.put("sql.time", java.sql.Time.valueOf("20:38:21"));
+    m1.put("timestamp", Timestamp.from(instant));
+    m1.put("url", new URL("https://www.example.com"));
+    m1.put("uri", new URI("https://www.example.com"));
+
+    // java.time
+    m1.put("localDate", localDate);
+    m1.put("localTime", localTime);
+    m1.put("localDateTime", localDateTime);
+    m1.put("offsetDateTime", OffsetDateTime.of(localDateTime, ZoneOffset.ofHoursMinutes(2, 30)));
+    m1.put("zonedDateTime", ZonedDateTime.of(localDateTime, ZoneId.of("Europe/Zurich")));
+    m1.put("instant", instant);
+    m1.put("duration", Duration.ofSeconds(1630348638L, 123456789L));
+    m1.put("period", Period.of(1, 2, 3));
+
+    // wrappers
+    m1.put("byte", (byte) 1);
+    m1.put("short", (short) 1);
+    m1.put("integer", 1);
+    m1.put("long", 1L);
+    m1.put("double", 1.0d);
+    m1.put("float", 1.0f);
+    m1.put("bigDecimal", BigDecimal.ONE);
+    m1.put("bigInteger", BigInteger.ONE);
+    m1.put("boolean", true);
+
+    Map<String, Object> m2 = this.serializationRoundTrip(m1);
+
+    this.compareContexts(m1, m2);
   }
 
 }
