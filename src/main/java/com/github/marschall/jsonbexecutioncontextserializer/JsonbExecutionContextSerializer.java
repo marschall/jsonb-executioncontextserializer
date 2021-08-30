@@ -23,7 +23,7 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
     JsonbConfig config = new JsonbConfig()
       .withDeserializers(new JobParameterSerializer())
       .withSerializers(new JobParameterSerializer())
-      .withAdapters(new ExecutionContextAdapter(), new JobParametersAdapter());
+      .withAdapters(new ExecutionContextAdapter(), new JobParametersAdapter(), new LocaleAdapter());
     this.jsonb = JsonbBuilder.create(config);
   }
 

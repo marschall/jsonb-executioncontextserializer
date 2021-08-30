@@ -59,17 +59,14 @@ class JsonbExecutionContextSerializerTest extends AbstractExecutionContextSerial
   @Test
   public void testAdditionalTrustedClass() throws IOException {
     // given
-    // FIXME
-    Jackson2ExecutionContextStringSerializer serializer =
-        new Jackson2ExecutionContextStringSerializer("java.util.Locale");
     Map<String, Object> context = new HashMap<>(1);
     context.put("locale", Locale.getDefault());
 
     // when
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    serializer.serialize(context, outputStream);
+    this.serializer.serialize(context, outputStream);
     InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-    Map<String, Object> deserializedContext = serializer.deserialize(inputStream);
+    Map<String, Object> deserializedContext = this.serializer.deserialize(inputStream);
 
     // then
     Locale locale = (Locale) deserializedContext.get("locale");
@@ -156,7 +153,7 @@ class JsonbExecutionContextSerializerTest extends AbstractExecutionContextSerial
     // then
     Object deserializedValue = deserializedContext.get(key);
     assertTrue(List.class.isAssignableFrom(deserializedValue.getClass()));
-    assertTrue(((List<String>)deserializedValue).containsAll(list));
+    assertTrue(((List<?>)deserializedValue).containsAll(list));
   }
 
   @Test
