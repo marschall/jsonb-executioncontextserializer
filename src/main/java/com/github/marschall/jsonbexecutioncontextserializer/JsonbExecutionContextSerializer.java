@@ -47,9 +47,9 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
   public JsonbExecutionContextSerializer() {
     JsonbConfig config = new JsonbConfig()
             .withEncoding(ISO_8859_1.name()) // JdbcJobExecutionDao hard codes ISO-8859-1
-            .withDeserializers(new JobParameterSerializer())
-            .withSerializers(new JobParameterSerializer())
-            .withAdapters(new ExecutionContextAdapter(), new JobParametersAdapter(), new LocaleAdapter());
+            .withDeserializers(new JobParameterSerializer(), new ExecutionContextWrapperSerializer())
+            .withSerializers(new JobParameterSerializer(), new ExecutionContextWrapperSerializer())
+            .withAdapters(new JobParametersAdapter(), new LocaleAdapter());
     this.jsonb = JsonbBuilder.create(config);
   }
 
@@ -63,12 +63,12 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
 
   @Override
   public void serialize(Map<String, Object> object, OutputStream outputStream) throws IOException {
-    this.jsonb.toJson(object, outputStream);
+    this.jsonb.toJson(new ExecutionContextWrapper(object), outputStream);
   }
 
   @Override
   public Map<String, Object> deserialize(InputStream inputStream) throws IOException {
-    return this.jsonb.fromJson(inputStream, MAP_TYPE);
+    return this.jsonb.fromJson(inputStream, ExecutionContextWrapper.class).getMap();
   }
 
 }

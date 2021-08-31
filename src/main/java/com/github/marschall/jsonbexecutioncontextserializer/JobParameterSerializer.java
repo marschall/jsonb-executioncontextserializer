@@ -3,6 +3,7 @@ package com.github.marschall.jsonbexecutioncontextserializer;
 import java.lang.reflect.Type;
 import java.util.Date;
 
+import javax.json.bind.JsonbException;
 import javax.json.bind.serializer.DeserializationContext;
 import javax.json.bind.serializer.JsonbDeserializer;
 import javax.json.bind.serializer.JsonbSerializer;
@@ -32,7 +33,7 @@ public final class JobParameterSerializer implements JsonbSerializer<JobParamete
         String key = parser.getString();
 
         // Move to json value
-        parser.next();
+        Event valueEvent = parser.next();
 
         switch (key) {
           case TYPE_KEY_NAME:
@@ -56,7 +57,16 @@ public final class JobParameterSerializer implements JsonbSerializer<JobParamete
             }
             break;
           case IDENTIFYING_KEY_NAME:
-            identifying = Boolean.valueOf(parser.getString());
+            switch (valueEvent) {
+            case VALUE_TRUE:
+              identifying = true;
+              break;
+            case VALUE_FALSE:
+              identifying = false;
+              break;
+            default:
+              throw new JsonbException("expected boolean");
+            }
             break;
         }
       }
