@@ -2,10 +2,14 @@ package com.github.marschall.jsonbexecutioncontextserializer;
 
 import static java.util.Map.entry;
 
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.json.bind.JsonbException;
 import javax.json.bind.serializer.DeserializationContext;
@@ -130,12 +134,27 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
 
       // TODO null
       Object value = entry.getValue();
-      generator.write(CLASS_KEY_NAME, value.getClass().getName());
+      generator.write(CLASS_KEY_NAME, getPublicClassName(value.getClass()));
       ctx.serialize(VALUE_KEY_NAME, value, generator);
 
       generator.writeEnd();
     }
     generator.writeEnd();
+  }
+  
+  private static String getPublicClassName(Class<?> valueClass) {
+    if (!Modifier.isPublic(valueClass.getModifiers()) && Collection.class.isAssignableFrom(valueClass)) {
+      if (Map.class.isAssignableFrom(valueClass)) {
+        return Map.class.getName();
+      }
+      if (List.class.isAssignableFrom(valueClass)) {
+        return List.class.getName();
+      }
+      if (Set.class.isAssignableFrom(valueClass)) {
+        return Set.class.getName();
+      }
+    }
+    return valueClass.getName();
   }
 
 }

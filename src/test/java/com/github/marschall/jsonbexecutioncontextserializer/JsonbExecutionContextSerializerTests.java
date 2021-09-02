@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,14 +25,20 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.batch.core.repository.ExecutionContextSerializer;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -143,11 +150,19 @@ class JsonbExecutionContextSerializerTests extends AbstractExecutionContextSeria
 
   public static class UnmappedDomesticNumber extends UnmappedPhoneNumber{}
 
-  @Test
-  void arrayAsListSerialization() throws IOException {
+  static Stream<Arguments> nonPublicLists() {
+    return Stream.of(
+        arguments("Arrays.asList", Arrays.asList("foo", "bar")),
+        arguments("List.of", List.of("foo", "bar")),
+        arguments("Collections.singletonList", Collections.singletonList("foo")),
+        arguments("Collections.unmodifiableList", Collections.unmodifiableList(new ArrayList<>(Collections.singletonList("foo"))))
+    );
+}
+  
+  @ParameterizedTest
+  @MethodSource("nonPublicLists")
+  void arrayAsListSerialization(String key, List<String> list) throws IOException {
     //given
-    List<String> list = Arrays.asList("foo", "bar");
-    String key = "Arrays.asList";
     Map<String, Object> context = new HashMap<>(1);
     context.put(key, list);
 
