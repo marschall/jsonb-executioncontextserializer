@@ -41,8 +41,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.batch.core.repository.ExecutionContextSerializer;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 class JsonbExecutionContextSerializerTests extends AbstractExecutionContextSerializerTests {
 
   private ExecutionContextSerializer serializer;
@@ -95,11 +93,9 @@ class JsonbExecutionContextSerializerTests extends AbstractExecutionContextSeria
     return this.serializer;
   }
 
-  @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
   public static class Person {
     public String name;
     public int age;
-    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
     public PhoneNumber phone;
   }
 
