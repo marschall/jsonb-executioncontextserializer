@@ -1,6 +1,5 @@
 package com.github.marschall.jsonbexecutioncontextserializer;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.junit.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -160,10 +159,7 @@ public abstract class AbstractExecutionContextSerializerTests {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     this.getSerializer().serialize(m1, out);
 
-    // FIXME
-    String s = new String(out.toByteArray(), ISO_8859_1);
-
-    InputStream in = new ByteArrayInputStream(s.getBytes(ISO_8859_1));
+    InputStream in = new ByteArrayInputStream(out.toByteArray());
     return this.getSerializer().deserialize(in);
   }
 
