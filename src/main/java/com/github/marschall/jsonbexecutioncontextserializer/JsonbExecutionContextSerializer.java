@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.json.bind.Jsonb;
@@ -19,10 +20,20 @@ import org.springframework.batch.core.repository.ExecutionContextSerializer;
 import org.springframework.util.Assert;
 
 
+/**
+ * Implementation that uses JSON-B to provide (de)serialization. 
+ *
+ * @see ExecutionContextSerializer
+ */
 public final class JsonbExecutionContextSerializer implements ExecutionContextSerializer {
 
   private final Jsonb jsonb;
 
+  /**
+   * Create a new {@link JsonbExecutionContextSerializer} using a default configuration.
+   * 
+   * @see JsonbBuilder#create()
+   */
   public JsonbExecutionContextSerializer() {
     JsonbConfig config = new JsonbConfig()
         .withEncoding(ISO_8859_1.name()) // JdbcJobExecutionDao hard codes ISO-8859-1
@@ -32,11 +43,25 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
     this.jsonb = JsonbBuilder.create(config);
   }
 
+  /**
+   * Create a new {@link JsonbExecutionContextSerializer} using a default configuration.
+   * 
+   * @param config the {@link JsonbConfig} used to create a {@link Jsonb} instance
+   * 
+   * @see JsonbBuilder#create(JsonbConfig)
+   */
   public JsonbExecutionContextSerializer(JsonbConfig config) {
+    Assert.notNull(config, "A JSON-B config is required");
     this.jsonb = JsonbBuilder.create(config);
   }
 
+  /**
+   * Create a new {@link JsonbExecutionContextSerializer} the given JSON-B instance.
+   * 
+   * @param jsonb the {@link Jsonb} instance to use
+   */
   public JsonbExecutionContextSerializer(Jsonb jsonb) {
+    Assert.notNull(jsonb, "A JSON-B instance is required");
     this.jsonb = jsonb;
   }
 
@@ -130,6 +155,44 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
         return null;
       }
       return Timestamp.valueOf(s);
+    }
+
+  }
+
+  /**
+   * Adapts a {@link Locale} to a string in ISO format.
+   * 
+   * @see Locale#toString()
+   */
+  static final class LocaleAdapter implements JsonbAdapter<Locale, String> {
+
+    @Override
+    public String adaptToJson(Locale locale) {
+      if (locale == null) {
+        return null;
+      }
+      return locale.toString();
+    }
+
+    @Override
+    public Locale adaptFromJson(String s) {
+      if (s == null) {
+        return null;
+      }
+      if (s.startsWith("_")) {
+        throw new IllegalArgumentException("unsupported locale format: " + s);
+      }
+      String[] parts = s.split("_");
+      switch (parts.length) {
+        case 1:
+          return new Locale(parts[0]);
+        case 2:
+          return new Locale(parts[0], parts[1]);
+        case 3:
+          return new Locale(parts[0], parts[1], parts[2]);
+        default:
+          throw new IllegalArgumentException("unsupported locale format: " + s);
+      }
     }
 
   }
