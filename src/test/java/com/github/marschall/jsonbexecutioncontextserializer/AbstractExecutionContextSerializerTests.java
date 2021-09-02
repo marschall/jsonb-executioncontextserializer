@@ -171,11 +171,11 @@ public abstract class AbstractExecutionContextSerializerTests {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     this.getSerializer().serialize(m1, out);
 
+    // FIXME
     String s = new String(out.toByteArray(), ISO_8859_1);
 
     InputStream in = new ByteArrayInputStream(s.getBytes(ISO_8859_1));
-    Map<String, Object> m2 = this.getSerializer().deserialize(in);
-    return m2;
+    return this.getSerializer().deserialize(in);
   }
 
 

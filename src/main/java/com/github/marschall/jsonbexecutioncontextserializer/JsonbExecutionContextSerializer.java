@@ -5,8 +5,6 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -21,30 +19,6 @@ import org.springframework.batch.core.repository.ExecutionContextSerializer;
 
 
 public final class JsonbExecutionContextSerializer implements ExecutionContextSerializer {
-
-  private static final Type MAP_TYPE = new ParameterizedType() {
-
-    @Override
-    public Type getRawType() {
-      return Map.class;
-    }
-
-    @Override
-    public Type getOwnerType() {
-      return null;
-    }
-
-    @Override
-    public Type[] getActualTypeArguments() {
-      return new Type[] { String.class, Object.class };
-    }
-
-    @Override
-    public String getTypeName() {
-      return "java.util.Map<String, Object>";
-    }
-
-  };
 
   private final Jsonb jsonb;
 
@@ -75,6 +49,13 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
     return this.jsonb.fromJson(inputStream, ExecutionContextWrapper.class).getMap();
   }
 
+  /**
+   * Adapts a {@link Date} in the format yyyy-MM-dd. This is important because while
+   * {@link Date} is a subclass of {@link java.util.Date} it is not a subtype and
+   * does not have instant semantics. Therefore it should not have a time component.
+   * 
+   * @see Date#toString()
+   */
   static final class SqlDateAdapter implements JsonbAdapter<Date, String> {
 
     @Override
@@ -95,6 +76,13 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
 
   }
 
+  /**
+   * Adapts a {@link Time} in the format hh:mm:ss. This is important because while
+   * {@link Time} is a subclass of {@link java.util.Date} it is not a subtype and
+   * does not have instant semantics. Therefore it should not have a time component.
+   * 
+   * @see Time#toString()
+   */
   static final class SqlTimeAdapter implements JsonbAdapter<Time, String> {
 
     @Override
@@ -115,6 +103,13 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
 
   }
 
+  /**
+   * Adapts a {@link Timestamp} in the format yyyy-mm-dd hh:mm:ss.fffffffff. This is important because while
+   * {@link Timestamp} is a subclass of {@link java.util.Date} it is not a subtype and
+   * does not have instant semantics. Therefore it should not have a time component.
+   * 
+   * @see Timestamp#toString()
+   */
   static final class SqlTimestampAdapter implements JsonbAdapter<Timestamp, String> {
 
     @Override
