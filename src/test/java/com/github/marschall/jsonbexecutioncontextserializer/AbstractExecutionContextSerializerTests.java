@@ -138,7 +138,7 @@ public abstract class AbstractExecutionContextSerializerTests {
     ComplexObject o1 = new ComplexObject();
     o1.setName("02345");
     Map<String, Object> m = new HashMap<>();
-    m.put("object1", Long.valueOf(12345L));
+    m.put("object1", BigDecimal.valueOf(12345L)); // Yasson converts Long to BigDecimal
     m.put("object2", "OBJECT TWO");
     o1.setMap(m);
     o1.setNumber(new BigDecimal("12345.67"));
@@ -187,7 +187,7 @@ public abstract class AbstractExecutionContextSerializerTests {
     private String name;
     private BigDecimal number;
     private ComplexObject obj;
-    private Map<String,Object> map;
+    private Map<String, Object> map;
 
     public String getName() {
       return this.name;

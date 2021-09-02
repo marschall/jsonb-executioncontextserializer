@@ -16,6 +16,7 @@ import javax.json.bind.JsonbConfig;
 import javax.json.bind.adapter.JsonbAdapter;
 
 import org.springframework.batch.core.repository.ExecutionContextSerializer;
+import org.springframework.util.Assert;
 
 
 public final class JsonbExecutionContextSerializer implements ExecutionContextSerializer {
@@ -40,13 +41,16 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
   }
 
   @Override
-  public void serialize(Map<String, Object> object, OutputStream outputStream) throws IOException {
-    this.jsonb.toJson(new ExecutionContextWrapper(object), outputStream);
+  public void serialize(Map<String, Object> context, OutputStream out) throws IOException {
+    Assert.notNull(context, "A context is required");
+    Assert.notNull(out, "An OutputStream is required");
+
+    this.jsonb.toJson(new ExecutionContextWrapper(context), out);
   }
 
   @Override
-  public Map<String, Object> deserialize(InputStream inputStream) throws IOException {
-    return this.jsonb.fromJson(inputStream, ExecutionContextWrapper.class).getMap();
+  public Map<String, Object> deserialize(InputStream in) throws IOException {
+    return this.jsonb.fromJson(in, ExecutionContextWrapper.class).getMap();
   }
 
   /**
