@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
@@ -33,6 +34,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import javax.json.bind.JsonbException;
+import javax.json.bind.annotation.JsonbTypeDeserializer;
+import javax.json.bind.annotation.JsonbTypeSerializer;
+import javax.json.bind.serializer.DeserializationContext;
+import javax.json.bind.serializer.JsonbDeserializer;
+import javax.json.bind.serializer.JsonbSerializer;
+import javax.json.bind.serializer.SerializationContext;
+import javax.json.stream.JsonGenerator;
+import javax.json.stream.JsonParser;
+import javax.json.stream.JsonParser.Event;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,7 +80,10 @@ class JsonbExecutionContextSerializerTests extends AbstractExecutionContextSeria
 
     InputStream in = new ByteArrayInputStream(os.toByteArray());
 
-    this.serializer.deserialize(in);
+    Map<String, Object> deserialized = this.serializer.deserialize(in);
+    Person deserializedPerson = (Person) deserialized.get("person");
+    assertNotNull(deserializedPerson);
+    assertNotNull(deserializedPerson.phone);
   }
 
   @Test
@@ -96,6 +111,9 @@ class JsonbExecutionContextSerializerTests extends AbstractExecutionContextSeria
   public static class Person {
     public String name;
     public int age;
+    
+    @JsonbTypeSerializer(PhoneNumberSerializer.class)
+    @JsonbTypeDeserializer(PhoneNumberSerializer.class)
     public PhoneNumber phone;
   }
 
@@ -237,6 +255,77 @@ class JsonbExecutionContextSerializerTests extends AbstractExecutionContextSeria
     Map<String, Object> m2 = this.serializationRoundTrip(m1);
 
     this.compareContexts(m1, m2);
+  }
+  
+  public static class PhoneNumberSerializer implements JsonbSerializer<PhoneNumber>, JsonbDeserializer<PhoneNumber> {
+
+    @Override
+    public PhoneNumber deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
+      PhoneNumber phoneNumber;
+      if (parser.next() != Event.KEY_NAME) {
+        throw new JsonbException("KEY_NAME expected");
+      }
+      if (!parser.getString().equals("type")) {
+        throw new JsonbException("type expected");
+      }
+      if (parser.next() != Event.VALUE_STRING) {
+        throw new JsonbException("string expected");
+      }
+      String type = parser.getString();
+      switch (type) {
+      case "domestic":
+        phoneNumber = new DomesticNumber();
+        break;
+      case "international":
+        phoneNumber = new InternationalNumber();
+        break;
+      default:
+        throw new JsonbException("unknown phone number type: " + type);
+      }
+
+      phoneNumber.areaCode = parseInt("area", parser);
+      phoneNumber.local = parseInt("local", parser);
+      if (phoneNumber instanceof InternationalNumber) {
+        ((InternationalNumber) phoneNumber).countryCode = parseInt("countryCode", parser);
+      }
+      
+      return phoneNumber;
+    }
+    
+    private int parseInt(String key, JsonParser parser) {
+      if (parser.next() != Event.KEY_NAME) {
+        throw new JsonbException("KEY_NAME expected");
+      }
+      if (!parser.getString().equals(key)) {
+        throw new JsonbException(key + " expected");
+      }
+      if (parser.next() != Event.VALUE_NUMBER) {
+        throw new JsonbException("number expected");
+      }
+      return parser.getInt();
+    }
+
+    @Override
+    public void serialize(PhoneNumber phoneNumber, JsonGenerator generator, SerializationContext ctx) {
+      generator.writeStartObject();
+      
+      if (phoneNumber instanceof DomesticNumber) {
+        generator.write("type", "domestic");
+      } else if (phoneNumber instanceof InternationalNumber) {
+        generator.write("type", "international");
+      }
+      
+      generator.write("area", phoneNumber.areaCode);
+      generator.write("local", phoneNumber.local);
+      
+      if (phoneNumber instanceof InternationalNumber) {
+        generator.write("countryCode", ((InternationalNumber) phoneNumber).countryCode);
+      }
+      
+      generator.writeEnd();
+      
+    }
+    
   }
 
 }
