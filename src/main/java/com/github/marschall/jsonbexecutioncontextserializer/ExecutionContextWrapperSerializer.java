@@ -1,6 +1,7 @@
 package com.github.marschall.jsonbexecutioncontextserializer;
 
-import static java.util.Map.entry;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
@@ -26,39 +27,51 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
 
   private static final String CLASS_KEY_NAME = "@class";
 
-  private static final Map<String, Class<?>> JDK_CLASSES = Map.ofEntries(
-      entry("java.lang.Byte", Byte.class),
-      entry("java.lang.Short", Short.class),
-      entry("java.lang.Integer", Integer.class),
-      entry("java.lang.Long", Long.class),
-      entry("java.lang.Float", Float.class),
-      entry("java.lang.Double", Double.class),
-      entry("java.lang.Boolean", Boolean.class),
-      entry("java.math.BigDecimal", java.math.BigDecimal.class),
-      entry("java.math.BigInteger", java.math.BigInteger.class),
-      
-      entry("java.util.Date", java.util.Date.class),
-      entry("java.util.Locale", java.util.Locale.class),
-      entry("java.net.URL", java.net.URL.class),
-      entry("java.net.URI", java.net.URI.class),
-
-      entry("java.sql.Date", java.sql.Date.class),
-      entry("java.sql.Time", java.sql.Time.class),
-      entry("java.sql.Timestamp", java.sql.Timestamp.class),
-      
-      entry("java.time.LocalDate", java.time.LocalDate.class),
-      entry("java.time.LocalTime", java.time.LocalTime.class),
-      entry("java.time.LocalDateTime", java.time.LocalDateTime.class),
-      entry("java.time.OffsetDateTime", java.time.OffsetDateTime.class),
-      entry("java.time.ZonedDateTime", java.time.ZonedDateTime.class),
-      entry("java.time.Duration", java.time.Duration.class),
-      entry("java.time.Period", java.time.Period.class)
-      );
+  private static final Map<String, Class<?>> JDK_CLASSES;
   
-  private static final Map<String, Class<?>> SPRING_BATCH_CLASSES = Map.ofEntries(
-      entry("org.springframework.batch.core.JobParameter", org.springframework.batch.core.JobParameter.class),
-      entry("org.springframework.batch.core.JobParameters", org.springframework.batch.core.JobParameters.class)
-      );
+  private static final Map<String, Class<?>> SPRING_BATCH_CLASSES;
+  
+  static {
+    List<Class<?>> jdkClasses = List.of(
+        Byte.class,
+        Short.class,
+        Integer.class,
+        Long.class,
+        Float.class,
+        Double.class,
+        Boolean.class,
+        java.math.BigDecimal.class,
+        java.math.BigInteger.class,
+        
+        java.util.Date.class,
+        java.util.Locale.class,
+        java.net.URL.class,
+        java.net.URI.class,
+
+        java.sql.Date.class,
+        java.sql.Time.class,
+        java.sql.Timestamp.class,
+        
+        java.time.LocalDate.class,
+        java.time.LocalTime.class,
+        java.time.LocalDateTime.class,
+        java.time.OffsetDateTime.class,
+        java.time.ZonedDateTime.class,
+        java.time.Duration.class,
+        java.time.Period.class);
+    
+    List<Class<?>> springBatchClasses = List.of(
+        org.springframework.batch.core.JobParameter.class,
+        org.springframework.batch.core.JobParameters.class);
+    
+    JDK_CLASSES = toClassMap(jdkClasses);
+    SPRING_BATCH_CLASSES = toClassMap(springBatchClasses);
+  }
+  
+  private static Map<String, Class<?>> toClassMap(List<Class<?>> classes) {
+    return classes.stream()
+                  .collect(toUnmodifiableMap(Class::getName, identity()));
+  }
 
   @Override
   public ExecutionContextWrapper deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
