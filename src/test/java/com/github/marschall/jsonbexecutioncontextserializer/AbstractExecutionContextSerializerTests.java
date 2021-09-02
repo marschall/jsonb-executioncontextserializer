@@ -21,6 +21,8 @@ import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.repository.ExecutionContextSerializer;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 /**
  * Abstract test class for {@code ExecutionContextSerializer} implementations. Provides a minimum on test methods
  * that should pass for each {@code ExecutionContextSerializer} implementation.
@@ -168,6 +170,7 @@ public abstract class AbstractExecutionContextSerializerTests {
 
   protected abstract ExecutionContextSerializer getSerializer();
 
+  @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
   public static class ComplexObject implements Serializable {
     private static final long serialVersionUID = 1L;
     private String name;
