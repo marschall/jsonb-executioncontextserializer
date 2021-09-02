@@ -8,7 +8,7 @@
   <inceptionYear>2021</inceptionYear>
   <url>https://github.com/marschall/jsonb-executioncontextserializer</url>
   <name>JSON-B ExecutionContextSerializer</name>
-  <description>A Spring Batch ExecutionContextSerializer that uses JSON-B</description>
+  <description>A Spring Batch ExecutionContextSerializer implementation that uses JSON-B to provide (de)serialization.</description>
 
   <developers>
     <developer>
