@@ -7,7 +7,7 @@ import javax.json.bind.adapter.JsonbAdapter;
 import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameters;
 
-public final class JobParametersAdapter implements JsonbAdapter<JobParameters, Map<String, JobParameter>> {
+final class JobParametersAdapter implements JsonbAdapter<JobParameters, Map<String, JobParameter>> {
 
   @Override
   public Map<String, JobParameter> adaptToJson(JobParameters jobParameters) {
@@ -18,6 +18,5 @@ public final class JobParametersAdapter implements JsonbAdapter<JobParameters, M
   public JobParameters adaptFromJson(Map<String, JobParameter> map) {
     return new JobParameters(map);
   }
-
 
 }

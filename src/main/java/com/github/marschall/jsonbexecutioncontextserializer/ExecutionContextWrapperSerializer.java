@@ -1,11 +1,11 @@
 package com.github.marschall.jsonbexecutioncontextserializer;
 
+import static java.util.Map.entry;
+
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
-import static java.util.Map.entry;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.json.bind.JsonbException;
 import javax.json.bind.serializer.DeserializationContext;
@@ -17,6 +17,10 @@ import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParser.Event;
 
 final class ExecutionContextWrapperSerializer implements JsonbSerializer<ExecutionContextWrapper>, JsonbDeserializer<ExecutionContextWrapper> {
+
+  private static final String VALUE_KEY_NAME = "value";
+
+  private static final String CLASS_KEY_NAME = "@class";
 
   private static final Map<String, Class<?>> JDK_CLASSES = Map.ofEntries(
       entry("java.lang.Byte", Byte.class),
@@ -58,16 +62,24 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
     Event next;
 
     while ((next = parser.next()) != Event.END_OBJECT) {
-      if (next == JsonParser.Event.KEY_NAME) {
+      if (next == Event.KEY_NAME) {
         String key = parser.getString();
 
-        // value object {
-        next = parser.next();
+        // key: {
+        if (parser.next() != Event.START_OBJECT) {
+          throw new JsonbException("START_OBJECT expected");
+        }
         
         // @class
-        next = parser.next();
-        String atClass = parser.getString();
-        next = parser.next();
+        if (parser.next() != Event.KEY_NAME) {
+          throw new JsonbException("KEY_NAME expected");
+        }
+        if (!parser.getString().equals(CLASS_KEY_NAME)) {
+          throw new JsonbException(CLASS_KEY_NAME + " expected");
+        }
+        if (parser.next() != Event.VALUE_STRING) {
+          throw new JsonbException("string expected");
+        }
         String className = parser.getString();
         Class<?> valueClass;
         try {
@@ -76,16 +88,22 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
           throw new JsonbException("could not load class: " + className, e);
         }
         
-        // value
-        next = parser.next();
-        String valueKey = parser.getString();
-        next = parser.next();
-        // value object {
+        // value {
+        if (parser.next() != Event.KEY_NAME) {
+          throw new JsonbException("KEY_NAME expected");
+        }
+        if (!parser.getString().equals(VALUE_KEY_NAME)) {
+          throw new JsonbException(VALUE_KEY_NAME + " expected");
+        }
         Object value = ctx.deserialize(valueClass, parser);
 
         map.put(key, value);
+
+        // close key: }
+        if (parser.next() != Event.END_OBJECT) {
+          throw new JsonbException("END_OBJECT expected");
+        }
         
-        parser.skipObject();
       }
     }
     return new ExecutionContextWrapper(map);
@@ -112,8 +130,8 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
 
       // TODO null
       Object value = entry.getValue();
-      generator.write("@class", value.getClass().getName());
-      ctx.serialize("value", value, generator);
+      generator.write(CLASS_KEY_NAME, value.getClass().getName());
+      ctx.serialize(VALUE_KEY_NAME, value, generator);
 
       generator.writeEnd();
     }

@@ -4,7 +4,7 @@ import java.util.Locale;
 
 import javax.json.bind.adapter.JsonbAdapter;
 
-public final class LocaleAdapter implements JsonbAdapter<Locale, String> {
+final class LocaleAdapter implements JsonbAdapter<Locale, String> {
 
   @Override
   public String adaptToJson(Locale locale) {

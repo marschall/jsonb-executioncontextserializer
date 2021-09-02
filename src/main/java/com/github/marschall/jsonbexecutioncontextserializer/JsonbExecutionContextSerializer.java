@@ -7,11 +7,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.Map;
 
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
+import javax.json.bind.adapter.JsonbAdapter;
 
 import org.springframework.batch.core.repository.ExecutionContextSerializer;
 
@@ -46,10 +50,10 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
 
   public JsonbExecutionContextSerializer() {
     JsonbConfig config = new JsonbConfig()
-            .withEncoding(ISO_8859_1.name()) // JdbcJobExecutionDao hard codes ISO-8859-1
-            .withDeserializers(new JobParameterSerializer(), new ExecutionContextWrapperSerializer())
-            .withSerializers(new JobParameterSerializer(), new ExecutionContextWrapperSerializer())
-            .withAdapters(new JobParametersAdapter(), new LocaleAdapter());
+        .withEncoding(ISO_8859_1.name()) // JdbcJobExecutionDao hard codes ISO-8859-1
+        .withDeserializers(new JobParameterSerializer(), new ExecutionContextWrapperSerializer())
+        .withSerializers(new JobParameterSerializer(), new ExecutionContextWrapperSerializer())
+        .withAdapters(new JobParametersAdapter(), new LocaleAdapter(), new SqlDateAdapter(), new SqlTimestampAdapter(), new SqlTimeAdapter());
     this.jsonb = JsonbBuilder.create(config);
   }
 
@@ -69,6 +73,66 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
   @Override
   public Map<String, Object> deserialize(InputStream inputStream) throws IOException {
     return this.jsonb.fromJson(inputStream, ExecutionContextWrapper.class).getMap();
+  }
+
+  static final class SqlDateAdapter implements JsonbAdapter<Date, String> {
+
+    @Override
+    public String adaptToJson(Date date) {
+      if (date == null) {
+        return null;
+      }
+      return date.toString();
+    }
+
+    @Override
+    public Date adaptFromJson(String s) {
+      if (s == null) {
+        return null;
+      }
+      return Date.valueOf(s);
+    }
+
+  }
+
+  static final class SqlTimeAdapter implements JsonbAdapter<Time, String> {
+
+    @Override
+    public String adaptToJson(Time time) {
+      if (time == null) {
+        return null;
+      }
+      return time.toString();
+    }
+
+    @Override
+    public Time adaptFromJson(String s) {
+      if (s == null) {
+        return null;
+      }
+      return Time.valueOf(s);
+    }
+
+  }
+
+  static final class SqlTimestampAdapter implements JsonbAdapter<Timestamp, String> {
+
+    @Override
+    public String adaptToJson(Timestamp timestamp) {
+      if (timestamp == null) {
+        return null;
+      }
+      return timestamp.toString();
+    }
+
+    @Override
+    public Timestamp adaptFromJson(String s) {
+      if (s == null) {
+        return null;
+      }
+      return Timestamp.valueOf(s);
+    }
+
   }
 
 }

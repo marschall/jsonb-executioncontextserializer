@@ -15,7 +15,7 @@ import javax.json.stream.JsonParser.Event;
 import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameter.ParameterType;
 
-public final class JobParameterSerializer implements JsonbSerializer<JobParameter>, JsonbDeserializer<JobParameter> {
+final class JobParameterSerializer implements JsonbSerializer<JobParameter>, JsonbDeserializer<JobParameter> {
 
   private static final String IDENTIFYING_KEY_NAME = "identifying";
   private static final String TYPE_KEY_NAME = "type";
@@ -32,7 +32,6 @@ public final class JobParameterSerializer implements JsonbSerializer<JobParamete
       if (next == JsonParser.Event.KEY_NAME) {
         String key = parser.getString();
 
-        // Move to json value
         Event valueEvent = parser.next();
 
         switch (key) {
