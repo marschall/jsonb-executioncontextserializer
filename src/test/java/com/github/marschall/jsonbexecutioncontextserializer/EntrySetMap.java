@@ -8,7 +8,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * A simple {@link Map} that just accumulates entries in a list
+ * alternating between a key and a value.
+ * <p>
+ * This is intended just to be passed to other map copy constructors like
+ * {@link ConcurrentHashMap#ConcurrentHashMap(Map)} and therefore implements
+ * only a minimal set of methods.
+ * <p>
+ * Note that insertion does not check for existing keys.
+ *
+ * @param <K> the key type
+ * @param <V> the value type
+ */
 final class EntrySetMap<K, V> extends AbstractMap<K, V> {
 
   private final List<Object> entries;
@@ -66,7 +80,9 @@ final class EntrySetMap<K, V> extends AbstractMap<K, V> {
       if (!this.hasNext()) {
         throw new NoSuchElementException();
       }
+      @SuppressWarnings("unchecked")
       K key = (K) EntrySetMap.this.entries.get(this.position);
+      @SuppressWarnings("unchecked")
       V value = (V) EntrySetMap.this.entries.get(this.position + 1);
 
       this.position += 2;
