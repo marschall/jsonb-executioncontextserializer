@@ -4,7 +4,7 @@
 
   <groupId>com.github.marschall</groupId>
   <artifactId>jsonb-executioncontextserializer</artifactId>
-  <version>0.1.0</version>
+  <version>0.2.0-SNAPSHOT</version>
   <inceptionYear>2021</inceptionYear>
   <url>https://github.com/marschall/jsonb-executioncontextserializer</url>
   <name>JSON-B ExecutionContextSerializer</name>
@@ -35,7 +35,7 @@
     <connection>scm:git:git@github.com:marschall/jsonb-executioncontextserializer.git</connection>
     <developerConnection>scm:git:git@github.com:marschall/jsonb-executioncontextserializer.git</developerConnection>
     <url>${project.url}</url>
-    <tag>0.1.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <build>
