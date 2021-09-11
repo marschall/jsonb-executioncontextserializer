@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,20 @@ import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParser.Event;
 
+/**
+ * Serializes an execution context.
+ *
+ * <h1>Format used</h1>
+ * <pre><code>
+ * "key": {
+ *   "@class": "com.acme.Person",
+ *   "value": {
+ *
+ *   }
+ *
+ * }
+ * </pre></code>
+ */
 final class ExecutionContextWrapperSerializer implements JsonbSerializer<ExecutionContextWrapper>, JsonbDeserializer<ExecutionContextWrapper> {
 
   private static final String VALUE_KEY_NAME = "value";
@@ -28,9 +43,9 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
   private static final String CLASS_KEY_NAME = "@class";
 
   private static final Map<String, Class<?>> JDK_CLASSES;
-  
+
   private static final Map<String, Class<?>> SPRING_BATCH_CLASSES;
-  
+
   static {
     List<Class<?>> jdkClasses = List.of(
         Byte.class,
@@ -42,7 +57,7 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
         Boolean.class,
         java.math.BigDecimal.class,
         java.math.BigInteger.class,
-        
+
         java.util.Date.class,
         java.util.Locale.class,
         java.net.URL.class,
@@ -51,7 +66,7 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
         java.sql.Date.class,
         java.sql.Time.class,
         java.sql.Timestamp.class,
-        
+
         java.time.LocalDate.class,
         java.time.LocalTime.class,
         java.time.LocalDateTime.class,
@@ -59,15 +74,15 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
         java.time.ZonedDateTime.class,
         java.time.Duration.class,
         java.time.Period.class);
-    
+
     List<Class<?>> springBatchClasses = List.of(
         org.springframework.batch.core.JobParameter.class,
         org.springframework.batch.core.JobParameters.class);
-    
+
     JDK_CLASSES = toClassMap(jdkClasses);
     SPRING_BATCH_CLASSES = toClassMap(springBatchClasses);
   }
-  
+
   private static Map<String, Class<?>> toClassMap(List<Class<?>> classes) {
     return classes.stream()
                   .collect(toUnmodifiableMap(Class::getName, identity()));
@@ -86,7 +101,7 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
         if (parser.next() != Event.START_OBJECT) {
           throw new JsonbException("START_OBJECT expected");
         }
-        
+
         // @class
         if (parser.next() != Event.KEY_NAME) {
           throw new JsonbException("KEY_NAME expected");
@@ -100,11 +115,11 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
         String className = parser.getString();
         Class<?> valueClass;
         try {
-          valueClass = resolveClass(className);
+          valueClass = this.resolveClass(className);
         } catch (ClassNotFoundException e) {
           throw new JsonbException("could not load class: " + className, e);
         }
-        
+
         // value {
         if (parser.next() != Event.KEY_NAME) {
           throw new JsonbException("KEY_NAME expected");
@@ -120,7 +135,7 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
         if (parser.next() != Event.END_OBJECT) {
           throw new JsonbException("END_OBJECT expected");
         }
-        
+
       }
     }
     return new ExecutionContextWrapper(map);
@@ -145,7 +160,7 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
     for (Entry<String, Object> entry : executionContext.entrySet()) {
       generator.writeStartObject(entry.getKey());
 
-      // TODO null
+      // execution context can't contain null values
       Object value = entry.getValue();
       generator.write(CLASS_KEY_NAME, getPublicClassName(value.getClass()));
       ctx.serialize(VALUE_KEY_NAME, value, generator);
@@ -154,7 +169,13 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
     }
     generator.writeEnd();
   }
-  
+
+  /**
+   * Use the interface name for non-public classes like the ones returned by {@link Arrays#asList(Object...)} or {@link List#of()}.
+   *
+   * @param valueClass
+   * @return
+   */
   private static String getPublicClassName(Class<?> valueClass) {
     if (!Modifier.isPublic(valueClass.getModifiers()) && Collection.class.isAssignableFrom(valueClass)) {
       if (Map.class.isAssignableFrom(valueClass)) {

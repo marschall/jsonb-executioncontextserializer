@@ -15,6 +15,42 @@ import javax.json.stream.JsonParser.Event;
 import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameter.ParameterType;
 
+/**
+ * Serializes a {@link JobParameter}
+ *
+ * <h1>Format used</h1>
+ * <pre><code>
+ * {
+ *   "type":"STRING",
+ *   "value":"paramValue",
+ *   "identifying":true
+ * }
+ * </code></pre>
+ *
+ * <h2>Paramater value serialization</h2>
+ * <table>
+ * <tr>
+ * <th>Parameter Type</th>
+ * <th>JSON serialization</th>
+ * </tr>
+ * <tr>
+ * <td>{@link ParameterType#STRING}</td>
+ * <td>string</td>
+ * </tr>
+ * <tr>
+ * <td>{@link ParameterType#DATE}</td>
+ * <td>number, number of milliseconds since the "the epoch"</dd>
+ * </tr>
+ * <tr>
+ * <td>{@link ParameterType#LONG}</td>
+ * <td>number</td>
+ * </tr>
+ * <tr>
+ * <td>{@link ParameterType#DOUBLE}</td>
+ * <td>number</td>
+ * </tr>
+ * </table>
+ */
 final class JobParameterSerializer implements JsonbSerializer<JobParameter>, JsonbDeserializer<JobParameter> {
 
   private static final String IDENTIFYING_KEY_NAME = "identifying";
