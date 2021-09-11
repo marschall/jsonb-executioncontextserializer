@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.JobParameter;
@@ -218,16 +219,16 @@ public abstract class AbstractExecutionContextSerializerTests {
 
       ComplexObject that = (ComplexObject) o;
 
-      if (this.map != null ? !this.map.equals(that.map) : that.map != null) {
+      if (!Objects.equals(this.map, that.map)) {
         return false;
       }
-      if (this.name != null ? !this.name.equals(that.name) : that.name != null) {
+      if (!Objects.equals(this.name, that.name)) {
         return false;
       }
-      if (this.number != null ? !this.number.equals(that.number) : that.number != null) {
+      if (!Objects.equals(this.number, that.number)) {
         return false;
       }
-      if (this.obj != null ? !this.obj.equals(that.obj) : that.obj != null) {
+      if (!Objects.equals(this.obj, that.obj)) {
         return false;
       }
 
@@ -237,10 +238,10 @@ public abstract class AbstractExecutionContextSerializerTests {
     @Override
     public int hashCode() {
       int result;
-      result = (this.name != null ? this.name.hashCode() : 0);
-      result = (31 * result) + (this.number != null ? this.number.hashCode() : 0);
-      result = (31 * result) + (this.obj != null ? this.obj.hashCode() : 0);
-      result = (31 * result) + (this.map != null ? this.map.hashCode() : 0);
+      result = Objects.hashCode(this.name);
+      result = (31 * result) + Objects.hashCode(this.number);
+      result = (31 * result) + Objects.hashCode(this.obj);
+      result = (31 * result) + Objects.hashCode(this.map);
       return result;
     }
 
