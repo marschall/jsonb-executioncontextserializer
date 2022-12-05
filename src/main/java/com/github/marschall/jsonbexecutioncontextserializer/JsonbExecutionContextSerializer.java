@@ -1,7 +1,5 @@
 package com.github.marschall.jsonbexecutioncontextserializer;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,17 +9,19 @@ import java.sql.Timestamp;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
-import javax.json.bind.adapter.JsonbAdapter;
-
 import org.springframework.batch.core.repository.ExecutionContextSerializer;
+import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.Assert;
+
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbConfig;
+import jakarta.json.bind.adapter.JsonbAdapter;
 
 
 /**
- * Implementation that uses JSON-B to provide (de)serialization. 
+ * Implementation that uses JSON-B to provide (de)serialization.
  *
  * @see ExecutionContextSerializer
  */
@@ -31,23 +31,33 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
 
   /**
    * Create a new {@link JsonbExecutionContextSerializer} using a default configuration.
-   * 
+   *
    * @see JsonbBuilder#create()
    */
   public JsonbExecutionContextSerializer() {
+    this(new DefaultConversionService());
+  }
+
+  /**
+   * Create a new {@link JsonbExecutionContextSerializer} using a default configuration.
+   *
+   * @param conversionService used to convert job parameters
+   * @see JsonbBuilder#create()
+   */
+  public JsonbExecutionContextSerializer(ConfigurableConversionService conversionService) {
     JsonbConfig config = new JsonbConfig()
-        .withEncoding(ISO_8859_1.name()) // JdbcJobExecutionDao hard codes ISO-8859-1
-        .withDeserializers(new JobParameterSerializer(), new ExecutionContextWrapperSerializer())
-        .withSerializers(new JobParameterSerializer(), new ExecutionContextWrapperSerializer())
+//        .withEncoding(ISO_8859_1.name()) // JdbcJobExecutionDao hard codes ISO-8859-1
+        .withDeserializers(new JobParameterSerializer(conversionService), new ExecutionContextWrapperSerializer())
+        .withSerializers(new JobParameterSerializer(conversionService), new ExecutionContextWrapperSerializer())
         .withAdapters(new JobParametersAdapter(), new LocaleAdapter(), new SqlDateAdapter(), new SqlTimestampAdapter(), new SqlTimeAdapter());
     this.jsonb = JsonbBuilder.create(config);
   }
 
   /**
    * Create a new {@link JsonbExecutionContextSerializer} using a default configuration.
-   * 
+   *
    * @param config the {@link JsonbConfig} used to create a {@link Jsonb} instance
-   * 
+   *
    * @see JsonbBuilder#create(JsonbConfig)
    */
   public JsonbExecutionContextSerializer(JsonbConfig config) {
@@ -57,7 +67,7 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
 
   /**
    * Create a new {@link JsonbExecutionContextSerializer} the given JSON-B instance.
-   * 
+   *
    * @param jsonb the {@link Jsonb} instance to use
    */
   public JsonbExecutionContextSerializer(Jsonb jsonb) {
@@ -82,7 +92,7 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
    * Adapts a {@link Date} in the format yyyy-MM-dd. This is important because while
    * {@link Date} is a subclass of {@link java.util.Date} it is not a subtype and
    * does not have instant semantics. Therefore it should not have a time component.
-   * 
+   *
    * @see Date#toString()
    */
   static final class SqlDateAdapter implements JsonbAdapter<Date, String> {
@@ -109,7 +119,7 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
    * Adapts a {@link Time} in the format hh:mm:ss. This is important because while
    * {@link Time} is a subclass of {@link java.util.Date} it is not a subtype and
    * does not have instant semantics. Therefore it should not have a time component.
-   * 
+   *
    * @see Time#toString()
    */
   static final class SqlTimeAdapter implements JsonbAdapter<Time, String> {
@@ -136,7 +146,7 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
    * Adapts a {@link Timestamp} in the format yyyy-mm-dd hh:mm:ss.fffffffff. This is important because while
    * {@link Timestamp} is a subclass of {@link java.util.Date} it is not a subtype and
    * does not have instant semantics. Therefore it should not have a time component.
-   * 
+   *
    * @see Timestamp#toString()
    */
   static final class SqlTimestampAdapter implements JsonbAdapter<Timestamp, String> {
@@ -161,7 +171,7 @@ public final class JsonbExecutionContextSerializer implements ExecutionContextSe
 
   /**
    * Adapts a {@link Locale} to a string in ISO format.
-   * 
+   *
    * @see Locale#toString()
    */
   static final class LocaleAdapter implements JsonbAdapter<Locale, String> {

@@ -13,14 +13,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.json.bind.JsonbException;
-import javax.json.bind.serializer.DeserializationContext;
-import javax.json.bind.serializer.JsonbDeserializer;
-import javax.json.bind.serializer.JsonbSerializer;
-import javax.json.bind.serializer.SerializationContext;
-import javax.json.stream.JsonGenerator;
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
+import jakarta.json.bind.JsonbException;
+import jakarta.json.bind.serializer.DeserializationContext;
+import jakarta.json.bind.serializer.JsonbDeserializer;
+import jakarta.json.bind.serializer.JsonbSerializer;
+import jakarta.json.bind.serializer.SerializationContext;
+import jakarta.json.stream.JsonGenerator;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParser.Event;
+
 
 /**
  * Serializes an execution context.
@@ -97,12 +98,12 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
       if (next == Event.KEY_NAME) {
         String key = parser.getString();
 
-        // key: {
+        // "key": {
         if (parser.next() != Event.START_OBJECT) {
           throw new JsonbException("START_OBJECT expected");
         }
 
-        // @class
+        // "@class":
         if (parser.next() != Event.KEY_NAME) {
           throw new JsonbException("KEY_NAME expected");
         }
@@ -120,18 +121,19 @@ final class ExecutionContextWrapperSerializer implements JsonbSerializer<Executi
           throw new JsonbException("could not load class: " + className, e);
         }
 
-        // value {
+        // "value": {
         if (parser.next() != Event.KEY_NAME) {
           throw new JsonbException("KEY_NAME expected");
         }
         if (!parser.getString().equals(VALUE_KEY_NAME)) {
           throw new JsonbException(VALUE_KEY_NAME + " expected");
         }
+        parser.next();
         Object value = ctx.deserialize(valueClass, parser);
 
         map.put(key, value);
 
-        // close key: }
+        // close "key": }
         if (parser.next() != Event.END_OBJECT) {
           throw new JsonbException("END_OBJECT expected");
         }

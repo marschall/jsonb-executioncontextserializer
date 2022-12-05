@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +52,7 @@ public abstract class AbstractExecutionContextSerializerTests {
   @Test
   void serializeStringJobParameter() throws Exception {
     Map<String, Object> m1 = new HashMap<>();
-    m1.put("name", new JobParameter("foo"));
+    m1.put("name", new JobParameter<>("foo", String.class));
 
     Map<String, Object> m2 = this.serializationRoundTrip(m1);
 
@@ -61,7 +62,17 @@ public abstract class AbstractExecutionContextSerializerTests {
   @Test
   void serializeDateJobParameter() throws Exception {
     Map<String, Object> m1 = new HashMap<>();
-    m1.put("birthDate", new JobParameter(new Date(123456790123L)));
+    m1.put("birthDate", new JobParameter<>(new Date(123456790123L), Date.class));
+
+    Map<String, Object> m2 = this.serializationRoundTrip(m1);
+
+    this.compareContexts(m1, m2);
+  }
+
+  @Test
+  void serializeLocalDateJobParameter() throws Exception {
+    Map<String, Object> m1 = new HashMap<>();
+    m1.put("birthDate", new JobParameter<>(LocalDate.of(1973, 11, 29), LocalDate.class));
 
     Map<String, Object> m2 = this.serializationRoundTrip(m1);
 
@@ -71,7 +82,7 @@ public abstract class AbstractExecutionContextSerializerTests {
   @Test
   void serializeDoubleJobParameter() throws Exception {
     Map<String, Object> m1 = new HashMap<>();
-    m1.put("weight", new JobParameter(80.5D));
+    m1.put("weight", new JobParameter<>(80.5D, Double.class));
 
     Map<String, Object> m2 = this.serializationRoundTrip(m1);
 
@@ -81,7 +92,7 @@ public abstract class AbstractExecutionContextSerializerTests {
   @Test
   void serializeLongJobParameter() throws Exception {
     Map<String, Object> m1 = new HashMap<>();
-    m1.put("age", new JobParameter(20L));
+    m1.put("age", new JobParameter<>(20L, Long.class));
 
     Map<String, Object> m2 = this.serializationRoundTrip(m1);
 
@@ -91,7 +102,7 @@ public abstract class AbstractExecutionContextSerializerTests {
   @Test
   void serializeNonIdentifyingJobParameter() throws Exception {
     Map<String, Object> m1 = new HashMap<>();
-    m1.put("name", new JobParameter("foo", false));
+    m1.put("name", new JobParameter<>("foo", String.class, false));
 
     Map<String, Object> m2 = this.serializationRoundTrip(m1);
 
@@ -100,8 +111,8 @@ public abstract class AbstractExecutionContextSerializerTests {
 
   @Test
   void serializeJobParameters() throws Exception {
-    Map<String, JobParameter> jobParametersMap = new HashMap<>();
-    jobParametersMap.put("paramName", new JobParameter("paramValue"));
+    Map<String, JobParameter<?>> jobParametersMap = new HashMap<>();
+    jobParametersMap.put("paramName", new JobParameter<>("paramValue", String.class));
 
     Map<String, Object> m1 = new HashMap<>();
     m1.put("params", new JobParameters(jobParametersMap));
