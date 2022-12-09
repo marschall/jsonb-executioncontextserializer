@@ -18,39 +18,15 @@ import jakarta.json.stream.JsonParser.Event;
 
 /**
  * Serializes a {@link JobParameter}
- *
+ * <p>
  * <h1>Format used</h1>
  * <pre><code>
  * {
- *   "type":"STRING",
+ *   "type":"java.lang.String",
  *   "value":"paramValue",
  *   "identifying":true
  * }
  * </code></pre>
- *
- * <h2>Paramater value serialization</h2>
- * <table>
- * <tr>
- * <th>Parameter Type</th>
- * <th>JSON serialization</th>
- * </tr>
- * <tr>
- * <td>{@link ParameterType#STRING}</td>
- * <td>string</td>
- * </tr>
- * <tr>
- * <td>{@link ParameterType#DATE}</td>
- * <td>number, number of milliseconds since the "the epoch"</dd>
- * </tr>
- * <tr>
- * <td>{@link ParameterType#LONG}</td>
- * <td>number</td>
- * </tr>
- * <tr>
- * <td>{@link ParameterType#DOUBLE}</td>
- * <td>number</td>
- * </tr>
- * </table>
  */
 @SuppressWarnings("rawtypes") // generic code
 final class JobParameterSerializer implements JsonbSerializer<JobParameter>, JsonbDeserializer<JobParameter> {
@@ -65,14 +41,15 @@ final class JobParameterSerializer implements JsonbSerializer<JobParameter>, Jso
     this.conversionService = conversionService;
   }
 
+  @SuppressWarnings("unchecked") // generic code
   @Override
   public JobParameter deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
     Class<?> parameterType = null;
     Object value = null;
     boolean identifying = true; // default if missing
 
-    Event next = parser.next();
-    while (next != Event.END_OBJECT) {
+    Event next;
+    while ((next = parser.next()) != Event.END_OBJECT) {
       if (next == JsonParser.Event.KEY_NAME) {
         String key = parser.getString();
 
@@ -110,7 +87,6 @@ final class JobParameterSerializer implements JsonbSerializer<JobParameter>, Jso
           }
         }
       }
-      next = parser.next();
     }
 
     return new JobParameter(value, parameterType, identifying);
