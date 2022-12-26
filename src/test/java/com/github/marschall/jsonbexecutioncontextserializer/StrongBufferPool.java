@@ -39,7 +39,7 @@ final class StrongBufferPool implements BufferPool {
 
     this.lock.lock();
     try {
-
+      this.buffers.add(buf);
     } finally {
       this.lock.unlock();
     }
